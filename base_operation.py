@@ -20,7 +20,7 @@ class BaseOperation(ABC):
 
     def handle_error(self, error: Exception):
         """处理错误"""
-        self.context.record_error(str(error))
+        self.context.context.record_error(str(error))
         return {
             "status": "error",
             "message": str(error)
@@ -28,7 +28,7 @@ class BaseOperation(ABC):
 
     def record_success(self, result: Dict[str, Any], operation_type: str):
         """记录成功执行"""
-        self.context.record_step(operation_type, {
+        self.context.context.record_step(operation_type, {
             "status": "success",
             "result": result
         })

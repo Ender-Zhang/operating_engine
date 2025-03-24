@@ -1,0 +1,21 @@
+{
+  "execution_id": "33e5d96f-f3bb-4105-b46d-8b27a9e15071",
+  "variables": {},
+  "current_step": 0,
+  "total_steps": 16,
+  "status": "paused",
+  "error_count": 1,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'record_step'"
+    }
+  ],
+  "waiting_for_input": true,
+  "last_operation": {
+    "type": "user_input",
+    "target": "request_dict"
+  },
+  "is_done": false
+}

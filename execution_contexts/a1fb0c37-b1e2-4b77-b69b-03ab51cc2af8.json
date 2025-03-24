@@ -1,0 +1,27 @@
+{
+  "variables": {},
+  "current_step": 1,
+  "total_steps": 16,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "user_input",
+      "details": {
+        "status": "success",
+        "result": {
+          "input": null,
+          "status": "waiting"
+        }
+      },
+      "timestamp": "2025-03-24 22:05:28.845110"
+    }
+  ],
+  "error_count": 0,
+  "last_error": null,
+  "status": "paused",
+  "waiting_for_input": true,
+  "last_operation": {
+    "type": "user_input",
+    "target": "request_dict"
+  }
+}

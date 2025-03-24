@@ -114,9 +114,12 @@ class CodeParser:
             
         # 分割参数对
         pairs = args_str.split(',')
-        for pair in pairs:
+        for i, pair in enumerate(pairs):
             pair = pair.strip()
             if '=' not in pair:
+                # 如果是第一个参数且没有等号，将其作为request_dict参数
+                if i == 0:
+                    args['request_dict'] = pair
                 continue
                 
             # 解析参数名和值

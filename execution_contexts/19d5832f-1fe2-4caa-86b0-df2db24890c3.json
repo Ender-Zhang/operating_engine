@@ -1,0 +1,27 @@
+{
+  "execution_id": "f02d35d6-01f6-4ba3-8de2-3d624f749fc2",
+  "variables": {
+    "request_dict": {
+      "input": "用户输入内容"
+    }
+  },
+  "current_step": 1,
+  "total_steps": 16,
+  "status": "error",
+  "error_count": 2,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'record_step'"
+    },
+    {
+      "step": 1,
+      "type": "error",
+      "message": "AppOperation需要request_dict参数"
+    }
+  ],
+  "waiting_for_input": false,
+  "last_operation": null,
+  "is_done": false
+}

@@ -1,0 +1,26 @@
+{
+  "execution_id": "12c9993a-d64d-419b-8b0a-bd0175722db5",
+  "variables": {},
+  "current_step": 0,
+  "total_steps": 16,
+  "status": "error",
+  "error_count": 2,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'record_step'"
+    },
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'update_variable'"
+    }
+  ],
+  "waiting_for_input": true,
+  "last_operation": {
+    "type": "user_input",
+    "target": "request_dict"
+  },
+  "is_done": false
+}

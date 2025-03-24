@@ -1,0 +1,177 @@
+{
+  "execution_id": "1fac967c-bd05-4bff-a206-2e3d38eb9ccf",
+  "variables": {
+    "request_dict": {
+      "input": "用户输入内容"
+    },
+    "modifid_request_dict": {
+      "status": "success",
+      "message": "总结报告已生成"
+    },
+    "save_pic": {
+      "status": "success",
+      "message": "操作完成"
+    }
+  },
+  "current_step": 16,
+  "total_steps": 16,
+  "status": "completed",
+  "error_count": 4,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "user_input",
+      "result": {
+        "status": "success",
+        "result": {
+          "input": null,
+          "status": "waiting"
+        }
+      }
+    },
+    {
+      "step": 1,
+      "type": "app_operation",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "已执行: 帮我到京东订单页面"
+        }
+      }
+    },
+    {
+      "step": 2,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'get_variable'"
+    },
+    {
+      "step": 3,
+      "type": "user_input",
+      "result": {
+        "status": "success",
+        "result": {
+          "input": null,
+          "status": "waiting"
+        }
+      }
+    },
+    {
+      "step": 4,
+      "type": "open_manus",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "操作完成"
+        }
+      }
+    },
+    {
+      "step": 5,
+      "type": "app_operation",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "已执行: 帮我到淘宝订单页面"
+        }
+      }
+    },
+    {
+      "step": 6,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'get_variable'"
+    },
+    {
+      "step": 7,
+      "type": "user_input",
+      "result": {
+        "status": "success",
+        "result": {
+          "input": null,
+          "status": "waiting"
+        }
+      }
+    },
+    {
+      "step": 8,
+      "type": "open_manus",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "操作完成"
+        }
+      }
+    },
+    {
+      "step": 9,
+      "type": "app_operation",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "已执行: 帮我到美团订单页面"
+        }
+      }
+    },
+    {
+      "step": 10,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'get_variable'"
+    },
+    {
+      "step": 11,
+      "type": "user_input",
+      "result": {
+        "status": "success",
+        "result": {
+          "input": null,
+          "status": "waiting"
+        }
+      }
+    },
+    {
+      "step": 12,
+      "type": "open_manus",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "操作完成"
+        }
+      }
+    },
+    {
+      "step": 13,
+      "type": "open_manus",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "操作完成"
+        }
+      }
+    },
+    {
+      "step": 14,
+      "type": "summary_result",
+      "result": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "总结报告已生成"
+        }
+      }
+    },
+    {
+      "step": 15,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'get_variable'"
+    }
+  ],
+  "waiting_for_input": false,
+  "last_operation": null,
+  "is_done": true
+}

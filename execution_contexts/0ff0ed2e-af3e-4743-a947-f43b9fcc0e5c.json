@@ -1,0 +1,18 @@
+{
+  "execution_id": "1b7d58de-020c-471f-affc-9045b31d5437",
+  "variables": {},
+  "current_step": 0,
+  "total_steps": 16,
+  "status": "error",
+  "error_count": 1,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'record_error'"
+    }
+  ],
+  "waiting_for_input": false,
+  "last_operation": null,
+  "is_done": false
+}

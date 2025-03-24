@@ -85,7 +85,8 @@ class ExecutionEngine:
                 "status": "paused",
                 "execution_id": execution_id,
                 "waiting_for_input": True,
-                "last_operation": self.context_manager.context.last_operation
+                "last_operation": self.context_manager.context.last_operation,
+                "isDone": False
             }
             
         # 如果已经完成，返回完成状态
@@ -96,7 +97,8 @@ class ExecutionEngine:
                 "total_steps": self.context_manager.context.total_steps,
                 "completed_steps": self.context_manager.context.current_step,
                 "error_count": self.context_manager.context.error_count,
-                "execution_history": self.context_manager.context.execution_history
+                "execution_history": self.context_manager.context.execution_history,
+                "isDone": True
             }
             
         # 获取缓存的代码
@@ -119,28 +121,51 @@ class ExecutionEngine:
                     
                 # 创建并执行操作
                 operation = operation_class(self.context_manager)
-                result = operation.execute(**op.get('args', {}))
+                
+                # 准备操作参数
+                args = {}
+                if op.get('args'):
+                    for arg_name, arg_value in op['args'].items():
+                        # 如果参数值是变量名，从上下文中获取变量值
+                        if isinstance(arg_value, str):
+                            if arg_value in self.context_manager.context.variables:
+                                args[arg_name] = self.context_manager.context.variables[arg_value]
+                            else:
+                                # 如果是字符串但不是变量名，直接使用
+                                args[arg_name] = arg_value
+                        else:
+                            args[arg_name] = arg_value
+                
+                # 如果是AppOperation，确保request_dict参数存在
+                if op['type'] == 'app_operation' and 'request_dict' not in args:
+                    raise ValueError("AppOperation需要request_dict参数")
+                
+                result = operation.execute(**args)
                 
                 # 如果是用户输入操作，暂停执行
                 if op['type'] == 'user_input':
-                    self.context_manager.set_waiting_for_input(True, op)
+                    self.context_manager.context.set_waiting_for_input(True, op)
                     self.context_manager.save_context(execution_id)
                     return {
                         "status": "paused",
                         "execution_id": execution_id,
                         "waiting_for_input": True,
-                        "last_operation": op
+                        "last_operation": op,
+                        "isDone": False
                     }
                 
                 # 更新变量（如果有目标变量）
                 if op.get('target'):
-                    self.context_manager.update_variable(op['target'], result)
+                    self.context_manager.context.update_variable(op['target'], result)
+                    
+                # 增加当前步骤
+                self.context_manager.context.current_step += 1
                     
                 # 保存上下文
                 self.context_manager.save_context(execution_id)
                 
             # 标记执行完成
-            self.context_manager.context.status = ExecutionStatus.COMPLETED
+            self.context_manager.context.mark_completed()
             self.context_manager.save_context(execution_id)
             
             return {
@@ -149,17 +174,19 @@ class ExecutionEngine:
                 "total_steps": self.context_manager.context.total_steps,
                 "completed_steps": self.context_manager.context.current_step,
                 "error_count": self.context_manager.context.error_count,
-                "execution_history": self.context_manager.context.execution_history
+                "execution_history": self.context_manager.context.execution_history,
+                "isDone": True
             }
             
         except Exception as e:
             # 记录错误并返回错误状态
-            self.context_manager.record_error(str(e))
+            self.context_manager.context.record_error(str(e))
             self.context_manager.save_context(execution_id)
             return {
                 "status": "error",
                 "execution_id": execution_id,
-                "error": str(e)
+                "error": str(e),
+                "isDone": False
             }
 
     def handle_user_input(self, execution_id: str, input_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -173,25 +200,47 @@ class ExecutionEngine:
         Returns:
             继续执行的结果
         """
-        # 验证执行上下文是否存在
-        if not self.context_manager.load_context(execution_id):
-            raise ValueError("未找到执行上下文")
+        try:
+            # 验证执行上下文是否存在
+            if not self.context_manager.load_context(execution_id):
+                raise ValueError("未找到执行上下文")
+                
+            # 验证是否在等待用户输入状态
+            if not self.context_manager.context.waiting_for_input:
+                raise ValueError("当前不在等待用户输入状态")
+                
+            # 更新用户输入变量
+            last_op = self.context_manager.context.last_operation
+            if last_op and last_op.get('target'):
+                # 确保输入数据包含必要的字段
+                if 'input' not in input_data:
+                    raise ValueError("输入数据必须包含 'input' 字段")
+                self.context_manager.context.update_variable(last_op['target'], input_data)
+                
+            # 继续执行
+            self.context_manager.context.set_waiting_for_input(False)
+            # 增加当前步骤，因为用户输入操作已经完成
+            self.context_manager.context.current_step += 1
+            self.context_manager.save_context(execution_id)
             
-        # 验证是否在等待用户输入状态
-        if not self.context_manager.context.waiting_for_input:
-            raise ValueError("当前不在等待用户输入状态")
+            result = self.execute_code(execution_id)
             
-        # 更新用户输入变量
-        last_op = self.context_manager.context.last_operation
-        if last_op and last_op.get('target'):
-            # 确保输入数据包含必要的字段
-            if 'input' not in input_data:
-                raise ValueError("输入数据必须包含 'input' 字段")
-            self.context_manager.update_variable(last_op['target'], input_data)
+            # 确保返回结果包含isDone标志
+            if "isDone" not in result:
+                result["isDone"] = result.get("status") == "completed" or result.get("status") == "success"
+                
+            return result
             
-        # 继续执行
-        self.context_manager.set_waiting_for_input(False)
-        return self.execute_code(execution_id)
+        except Exception as e:
+            # 记录错误并返回错误状态
+            self.context_manager.context.record_error(str(e))
+            self.context_manager.save_context(execution_id)
+            return {
+                "status": "error",
+                "execution_id": execution_id,
+                "error": str(e),
+                "isDone": False
+            }
 
 # 创建FastAPI应用
 app = FastAPI(
@@ -227,6 +276,7 @@ async def root():
         }
     }
 
+@app.post("/engine")
 @app.post("/engine/")
 async def engine_endpoint(request: EngineRequest):
     """
@@ -251,11 +301,18 @@ async def engine_endpoint(request: EngineRequest):
         else:
             result = engine.execute_code(request.execution_id)
             
-        if result["status"] == "error":
-            raise HTTPException(status_code=400, detail=result["error"])
+        # 确保返回结果包含isDone标志
+        if "isDone" not in result:
+            result["isDone"] = result.get("status") == "completed" or result.get("status") == "success"
+            
         return result
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        # 发生错误时返回错误信息
+        return {
+            "status": "error",
+            "error": str(e),
+            "isDone": False
+        }
 
 def main():
     """启动FastAPI服务器"""

@@ -1,117 +1,217 @@
-from typing import Dict, Any, Optional
-from dataclasses import dataclass
+'''
+上下文管理模块
+该模块负责：
+1. 管理执行上下文
+2. 保存和加载执行状态
+3. 处理变量存储
+4. 记录执行历史
+
+Author: Ender-Zhang 102596313+Ender-Zhang@users.noreply.github.com
+Date: 2025-03-24 21:04:43
+LastEditors: Ender-Zhang 102596313+Ender-Zhang@users.noreply.github.com
+LastEditTime: 2025-03-24 21:23:18
+'''
 import json
 import os
-import datetime
 from enum import Enum
+from typing import Dict, Any, List, Optional
+import uuid
 
 class ExecutionStatus(Enum):
-    WAITING = "waiting"
-    RUNNING = "running"
-    PAUSED = "paused"
-    COMPLETED = "completed"
-    ERROR = "error"
+    """
+    执行状态枚举
+    """
+    RUNNING = "running"       # 正在执行
+    PAUSED = "paused"        # 暂停等待用户输入
+    COMPLETED = "completed"  # 执行完成
+    ERROR = "error"          # 执行出错
 
-@dataclass
-class ExecutionContext:
-    variables: Dict[str, Any]
-    current_step: int
-    total_steps: int
-    execution_history: list
-    error_count: int
-    status: ExecutionStatus
-    last_error: Optional[str] = None
-    waiting_for_input: bool = False
-    last_operation: Optional[Dict[str, Any]] = None
-
-class ContextManager:
+class Context:
+    """
+    执行上下文类
+    用于存储和管理执行过程中的状态信息
+    """
     def __init__(self):
-        self.context = ExecutionContext(
-            variables={},
-            current_step=0,
-            total_steps=0,
-            execution_history=[],
-            error_count=0,
-            status=ExecutionStatus.WAITING
-        )
-        self._setup_save_dir()
+        """
+        初始化执行上下文
+        """
+        self.execution_id = str(uuid.uuid4())  # 执行ID
+        self.variables: Dict[str, Any] = {}    # 变量存储
+        self.current_step = 0                  # 当前执行步骤
+        self.total_steps = 0                   # 总步骤数
+        self.status = ExecutionStatus.RUNNING  # 执行状态
+        self.error_count = 0                   # 错误计数
+        self.execution_history: List[Dict[str, Any]] = []  # 执行历史
+        self.waiting_for_input = False         # 是否等待用户输入
+        self.last_operation: Optional[Dict[str, Any]] = None  # 最后一个操作
+        self.is_done = False                   # 是否完成
 
-    def _setup_save_dir(self):
-        """创建保存目录"""
-        self.save_dir = "execution_contexts"
-        if not os.path.exists(self.save_dir):
-            os.makedirs(self.save_dir)
-
-    def save_context(self, execution_id: str):
-        """保存执行上下文到文件"""
-        context_data = {
-            "variables": self.context.variables,
-            "current_step": self.context.current_step,
-            "total_steps": self.context.total_steps,
-            "execution_history": self.context.execution_history,
-            "error_count": self.context.error_count,
-            "last_error": self.context.last_error,
-            "status": self.context.status.value,
-            "waiting_for_input": self.context.waiting_for_input,
-            "last_operation": self.context.last_operation
-        }
-        file_path = os.path.join(self.save_dir, f"{execution_id}.json")
-        with open(file_path, 'w', encoding='utf-8') as f:
-            json.dump(context_data, f, ensure_ascii=False, indent=2)
-
-    def load_context(self, execution_id: str) -> bool:
-        """从文件加载执行上下文"""
-        file_path = os.path.join(self.save_dir, f"{execution_id}.json")
-        if not os.path.exists(file_path):
-            return False
+    def update_variable(self, name: str, value: Any) -> None:
+        """
+        更新变量值
         
-        try:
-            with open(file_path, 'r', encoding='utf-8') as f:
-                context_data = json.load(f)
-                context_data['status'] = ExecutionStatus(context_data['status'])
-                self.context = ExecutionContext(**context_data)
-            return True
-        except Exception as e:
-            self.context.last_error = str(e)
-            return False
-
-    def update_variable(self, name: str, value: Any):
-        """更新变量值"""
-        self.context.variables[name] = value
+        Args:
+            name: 变量名
+            value: 变量值
+        """
+        self.variables[name] = value
 
     def get_variable(self, name: str) -> Any:
-        """获取变量值"""
-        return self.context.variables.get(name)
+        """
+        获取变量值
+        
+        Args:
+            name: 变量名
+            
+        Returns:
+            变量值
+        """
+        return self.variables.get(name)
 
-    def record_step(self, step_type: str, details: Dict[str, Any]):
-        """记录执行步骤"""
-        self.context.execution_history.append({
-            "step": self.context.current_step,
-            "type": step_type,
-            "details": details,
-            "timestamp": str(datetime.datetime.now())
+    def record_error(self, error: str) -> None:
+        """
+        记录错误信息
+        
+        Args:
+            error: 错误信息
+        """
+        self.error_count += 1
+        self.status = ExecutionStatus.ERROR
+        self.execution_history.append({
+            "step": self.current_step,
+            "type": "error",
+            "message": error
         })
-        self.context.current_step += 1
 
-    def record_error(self, error: str):
-        """记录错误"""
-        self.context.error_count += 1
-        self.context.last_error = error
-        self.context.status = ExecutionStatus.ERROR
+    def set_waiting_for_input(self, waiting: bool, operation: Optional[Dict[str, Any]] = None) -> None:
+        """
+        设置等待用户输入状态
+        
+        Args:
+            waiting: 是否等待用户输入
+            operation: 等待的操作信息
+        """
+        self.waiting_for_input = waiting
+        if waiting:
+            self.status = ExecutionStatus.PAUSED
+            self.last_operation = operation
+        else:
+            self.status = ExecutionStatus.RUNNING
+            self.last_operation = None
 
-    def reset(self):
-        """重置上下文"""
-        self.context = ExecutionContext(
-            variables={},
-            current_step=0,
-            total_steps=0,
-            execution_history=[],
-            error_count=0,
-            status=ExecutionStatus.WAITING
-        )
+    def mark_completed(self) -> None:
+        """
+        标记执行完成
+        """
+        self.status = ExecutionStatus.COMPLETED
+        self.is_done = True
 
-    def set_waiting_for_input(self, waiting: bool, last_operation: Optional[Dict[str, Any]] = None):
-        """设置等待用户输入状态"""
-        self.context.waiting_for_input = waiting
-        self.context.last_operation = last_operation
-        self.context.status = ExecutionStatus.PAUSED if waiting else ExecutionStatus.RUNNING 
+    def record_step(self, operation_type: str, result: Dict[str, Any]) -> None:
+        """
+        记录执行步骤
+        
+        Args:
+            operation_type: 操作类型
+            result: 执行结果
+        """
+        self.execution_history.append({
+            "step": self.current_step,
+            "type": operation_type,
+            "result": result
+        })
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        将上下文转换为字典
+        
+        Returns:
+            包含上下文信息的字典
+        """
+        return {
+            "execution_id": self.execution_id,
+            "variables": self.variables,
+            "current_step": self.current_step,
+            "total_steps": self.total_steps,
+            "status": self.status.value,
+            "error_count": self.error_count,
+            "execution_history": self.execution_history,
+            "waiting_for_input": self.waiting_for_input,
+            "last_operation": self.last_operation,
+            "is_done": self.is_done
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'Context':
+        """
+        从字典创建上下文
+        
+        Args:
+            data: 包含上下文信息的字典
+            
+        Returns:
+            新的上下文实例
+        """
+        context = cls()
+        context.execution_id = data.get("execution_id", str(uuid.uuid4()))
+        context.variables = data.get("variables", {})
+        context.current_step = data.get("current_step", 0)
+        context.total_steps = data.get("total_steps", 0)
+        context.status = ExecutionStatus(data.get("status", "running"))
+        context.error_count = data.get("error_count", 0)
+        context.execution_history = data.get("execution_history", [])
+        context.waiting_for_input = data.get("waiting_for_input", False)
+        context.last_operation = data.get("last_operation")
+        context.is_done = data.get("is_done", False)
+        return context
+
+class ContextManager:
+    """
+    上下文管理器类
+    负责管理执行上下文的保存和加载
+    """
+    def __init__(self):
+        """
+        初始化上下文管理器
+        """
+        self.context = Context()
+        self.contexts_dir = "execution_contexts"
+        os.makedirs(self.contexts_dir, exist_ok=True)
+
+    def reset(self) -> None:
+        """
+        重置上下文
+        """
+        self.context = Context()
+
+    def save_context(self, execution_id: str) -> None:
+        """
+        保存上下文到文件
+        
+        Args:
+            execution_id: 执行ID
+        """
+        file_path = os.path.join(self.contexts_dir, f"{execution_id}.json")
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(self.context.to_dict(), f, ensure_ascii=False, indent=2)
+
+    def load_context(self, execution_id: str) -> bool:
+        """
+        从文件加载上下文
+        
+        Args:
+            execution_id: 执行ID
+            
+        Returns:
+            是否成功加载上下文
+        """
+        file_path = os.path.join(self.contexts_dir, f"{execution_id}.json")
+        if not os.path.exists(file_path):
+            return False
+            
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                self.context = Context.from_dict(data)
+                return True
+        except Exception:
+            return False 

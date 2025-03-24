@@ -1,0 +1,23 @@
+{
+  "execution_id": "bc9c5e66-5830-4498-bcf7-7d7b6288ad99",
+  "variables": {},
+  "current_step": 0,
+  "total_steps": 16,
+  "status": "error",
+  "error_count": 2,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'record_step'"
+    },
+    {
+      "step": 0,
+      "type": "error",
+      "message": "'ContextManager' object has no attribute 'set_waiting_for_input'"
+    }
+  ],
+  "waiting_for_input": false,
+  "last_operation": null,
+  "is_done": false
+}

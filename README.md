@@ -87,7 +87,7 @@ curl http://localhost:8000/
 #### 1. 开始新的执行
 
 ```bash
-curl -X POST http://localhost:8000/engine \
+curl -X POST http://localhost:8000/engine/ \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -101,17 +101,18 @@ curl -X POST http://localhost:8000/engine \
   "last_operation": {
     "type": "user_input",
     "target": "request_dict"
-  }
+  },
+  "isDone": false
 }
 ```
 
 #### 2. 提供用户输入
 
 ```bash
-curl -X POST http://localhost:8000/engine \
+curl -X POST http://localhost:8000/engine/ \
   -H "Content-Type: application/json" \
   -d '{
-    "execution_id": "550e8400-e29b-41d4-a716-446655440000",
+    "execution_id": "你的执行ID",
     "input_data": {
       "input": "用户输入内容"
     }
@@ -121,10 +122,10 @@ curl -X POST http://localhost:8000/engine \
 #### 3. 继续执行
 
 ```bash
-curl -X POST http://localhost:8000/engine \
+curl -X POST http://localhost:8000/engine/ \
   -H "Content-Type: application/json" \
   -d '{
-    "execution_id": "550e8400-e29b-41d4-a716-446655440000"
+    "execution_id": "你的执行ID"
   }'
 ```
 
@@ -146,6 +147,16 @@ save_pic = OpenManus(request_dict, save_pic='save_pic')
 
 # 执行应用操作
 modifid_request_dict = AppOperation(request_dict, instruction='帮我到淘宝订单页面')
+response(modifid_request_dict)
+
+# 获取用户输入
+request_dict = user_input()
+
+# 保存截图
+save_pic = OpenManus(request_dict, save_pic='save_pic')
+
+# 执行应用操作
+modifid_request_dict = AppOperation(request_dict, instruction='帮我到美团订单页面')
 response(modifid_request_dict)
 
 # 获取用户输入
