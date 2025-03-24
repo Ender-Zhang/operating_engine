@@ -9,7 +9,7 @@
 Author: Ender-Zhang 102596313+Ender-Zhang@users.noreply.github.com
 Date: 2025-03-24 21:04:43
 LastEditors: Ender-Zhang 102596313+Ender-Zhang@users.noreply.github.com
-LastEditTime: 2025-03-24 22:39:39
+LastEditTime: 2025-03-24 22:42:36
 '''
 from typing import List, Dict, Any, Optional
 import re
@@ -35,6 +35,7 @@ class CodeParser:
             code: 要解析的伪代码字符串
         """
         self.code = code
+        self.operations = []  # 保存解析后的操作列表
         # 定义支持的操作类型及其对应的正则表达式模式
         self.operation_patterns = {
             'user_input': r'^(\w+)\s*=\s*user_input\(\s*\)$',
@@ -53,16 +54,52 @@ class CodeParser:
         """
         try:
             # 首先使用正则表达式快速匹配操作
-            operations = self._parse_with_regex()
+            self.operations = self._parse_with_regex()
             
             # 然后使用AST分析代码结构和依赖关系
             ast_tree = ast.parse(self.code)
-            self._analyze_with_ast(ast_tree, operations)
+            self._analyze_with_ast(ast_tree, self.operations)
             
-            return operations
+            return self.operations
         except Exception as e:
             raise ValueError(f"代码解析错误: {str(e)}")
             
+    def get_operations(self) -> List[Dict[str, Any]]:
+        """
+        获取解析后的操作列表
+        
+        Returns:
+            包含所有操作信息的列表
+        """
+        return self.operations
+        
+    def get_operation_by_line(self, line_number: int) -> Optional[Dict[str, Any]]:
+        """
+        根据行号获取操作
+        
+        Args:
+            line_number: 行号
+            
+        Returns:
+            对应行号的操作信息，如果不存在则返回None
+        """
+        for op in self.operations:
+            if op.get('line_number') == line_number:
+                return op
+        return None
+        
+    def get_operation_by_type(self, op_type: str) -> List[Dict[str, Any]]:
+        """
+        根据操作类型获取操作列表
+        
+        Args:
+            op_type: 操作类型
+            
+        Returns:
+            指定类型的所有操作列表
+        """
+        return [op for op in self.operations if op.get('type') == op_type]
+        
     def _parse_with_regex(self) -> List[Dict[str, Any]]:
         """使用正则表达式解析基本操作"""
         operations = []
