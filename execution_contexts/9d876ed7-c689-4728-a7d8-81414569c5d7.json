@@ -1,0 +1,26 @@
+{
+  "variables": {
+    "request_dict": {
+      "input": "用户输入",
+      "status": "success"
+    }
+  },
+  "current_step": 1,
+  "total_steps": 16,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "user_input",
+      "details": {
+        "status": "success",
+        "result": {
+          "input": "用户输入",
+          "status": "success"
+        }
+      },
+      "timestamp": "2025-03-24 21:14:35.809215"
+    }
+  ],
+  "error_count": 1,
+  "last_error": "AppOperation.execute() missing 1 required positional argument: 'request_dict'"
+}

@@ -1,0 +1,54 @@
+{
+  "variables": {
+    "request_dict": {
+      "input": "用户输入",
+      "status": "success"
+    },
+    "modifid_request_dict": {
+      "status": "success",
+      "message": "已执行: 帮我到京东订单页面"
+    }
+  },
+  "current_step": 3,
+  "total_steps": 3,
+  "execution_history": [
+    {
+      "step": 0,
+      "type": "user_input",
+      "details": {
+        "status": "success",
+        "result": {
+          "input": "用户输入",
+          "status": "success"
+        }
+      },
+      "timestamp": "2025-03-24 21:19:32.704261"
+    },
+    {
+      "step": 1,
+      "type": "app_operation",
+      "details": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "已执行: 帮我到京东订单页面"
+        }
+      },
+      "timestamp": "2025-03-24 21:19:32.704899"
+    },
+    {
+      "step": 2,
+      "type": "response",
+      "details": {
+        "status": "success",
+        "result": {
+          "status": "success",
+          "message": "已执行: 帮我到京东订单页面"
+        }
+      },
+      "timestamp": "2025-03-24 21:19:32.705641"
+    }
+  ],
+  "error_count": 0,
+  "last_error": null
+}
